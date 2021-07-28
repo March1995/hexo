@@ -78,6 +78,8 @@ Parallel Scavenge +  Parallel Old
 
 synchronized jvm层面
 
+synchronized 1.6之前是重锁，调用操作系统的函数，1.7之后做了优化，在jvm升级 偏向锁，轻量锁，
+
 ### 10 对AQS的理解
 
 核心思想是，如果被请求的共享资源空闲，则将当前请求资源的线程设置为有效的工作线程，并且将共享资源设置为锁定状态。
