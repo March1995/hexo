@@ -87,6 +87,8 @@ synchronized 1.6之前是重锁，调用操作系统的函数，1.7之后做了�
 
 ### 11 Dubbo的实现原理
 
+> https://mp.weixin.qq.com/s/uI5l5EMeiIxeZWBzma9Nhg
+
 ### 12 几种Mq的优缺点,项目上为什么用XXXMq
 
 ### 13 mysql索引有几种,底层数据结构是什么,为什么会用到这种数据结构,优点是什么? 
