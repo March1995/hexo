@@ -25,6 +25,7 @@ allow-origin:
 allow-methods:
 当跨域请求需要携带cookie是，请求头中需要设置Access-Control-Allow-Credentials:true。
 Access-Control-Allow-Credentials值为true时，Access-Control-Allow-Origin必须有明确的值，不能是通配符(*)
+
 > 负载均衡: https://segmentfault.com/a/1190000022440540
 
 使用upstream模块定义后端服务器
@@ -38,7 +39,22 @@ least_conn
 
 ### 4 线程池的使用,几大参数,参数解析 
 
-### 5 Springcloud使用过哪些组件,在项目中起什么作用。 
+核心线程数
+
+最大线程数
+
+允许线程空闲时间
+
+时间对象
+
+阻塞队列
+
+线程工厂
+
+任务拒绝策略
+
+### 5 Springcloud使用过哪些组件,在项目中起什么作用。
+
 
 ### 6 Springboot相互依赖问题的解决原理,几种注入注解的区别@Autowired@Resource. 
 
