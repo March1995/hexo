@@ -32,7 +32,7 @@ categories: [JavaSE]
     // 默认初始容量,必须是2的次方
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; // aka 16
     
-    // 最大容量，1的30次方，因为int类型32位，去掉一位符号位，只能左移30位
+    // 最大容量，2的30次方，因为int类型32位，去掉一位符号位，只能左移30位
     static final int MAXIMUM_CAPACITY = 1 << 30;
     
     // 默认负载因子
