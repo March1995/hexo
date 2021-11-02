@@ -153,11 +153,28 @@
 
  （5）任务结束后会不会回收线程
 
+     allowCoreThreadTimeOut手动设置为true或者执行的run方法抛出异常
+     ThreadPoolExecutor回收工作线程，一条线程getTask()返回null，就会被回收。
+    分两种场景。
+    未调用shutdown() ，RUNNING状态下全部任务执行完成的场景
+    线程数量大于corePoolSize，线程超时阻塞，超时唤醒后CAS减少工作线程数，如果CAS成功，返回null，线程回收。否则进入下一次循环。当工作者线程数量小于等于corePoolSize，就可以一直阻塞了。
+    调用shutdown() ，全部任务执行完成的场景
+    shutdown() 会向所有线程发出中断信号，这时有两种可能。
+    2.1）所有线程都在阻塞
+    中断唤醒，进入循环，都符合第一个if判断条件，都返回null，所有线程回收。
+    2.2）任务还没有完全执行完
+    至少会有一条线程被回收。在processWorkerExit(Worker w, boolean completedAbruptly)方法里会调用tryTerminate()，向任意空闲线程发出中断信号。所有被阻塞的线程，最终都会被一个个唤醒，回收。
+
+
  （6）未使用的线程池中的线程放在哪里
 
  （7）线程池线程存在哪
 
+    worker
+
  （8）cache线程池会不会销毁核心线程
+    
+   
 
 6、Java多线程的几种状态及线程各个状态之间是如何切换的
 
@@ -168,6 +185,8 @@
 9、ThreadLocal的底层实现形式及实现的数据结构？
 
 10、Sychornized是否是公平锁
+
+    非公平锁，可以重入
 
 11、Sychronized和ReentryLock的区别
 

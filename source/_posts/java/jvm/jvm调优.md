@@ -1,6 +1,6 @@
 ---
 title: JVM调优
-date: 2018-10-31
+date: 2021-10-31
 desc: jvm知识要点,jvm学习笔记
 keywords: jvm
 categories: [JVM]
