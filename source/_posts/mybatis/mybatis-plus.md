@@ -46,43 +46,104 @@ public @interface MapperScan {
 其中这些beandefinition的beanclass被设置成了MapperFactoryBean。
 
 ```java
-@Override
-public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata,BeanDefinitionRegistry registry){
-        AnnotationAttributes mapperScanAttrs=AnnotationAttributes
-        .fromMap(importingClassMetadata.getAnnotationAttributes(MapperScan.class.getName()));
-        if(mapperScanAttrs!=null){
-        registerBeanDefinitions(mapperScanAttrs,registry,generateBaseBeanName(importingClassMetadata,0));
+static class RepeatingRegistrar extends MapperScannerRegistrar {
+    RepeatingRegistrar() {
+    }
+
+    public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+        AnnotationAttributes mapperScansAttrs = AnnotationAttributes.fromMap(importingClassMetadata.getAnnotationAttributes(MapperScans.class.getName()));
+        if (mapperScansAttrs != null) {
+            Arrays.stream(mapperScansAttrs.getAnnotationArray("value")).forEach((mapperScanAttrs) -> {
+                this.registerBeanDefinitions(mapperScanAttrs, registry);
+            });
         }
+
+    }
+
+    void registerBeanDefinitions(AnnotationAttributes annoAttrs, BeanDefinitionRegistry registry) {
+        ClassPathMapperScanner scanner = new ClassPathMapperScanner(registry);
+        Optional.ofNullable(this.resourceLoader).ifPresent(scanner::setResourceLoader);
+        Class<? extends Annotation> annotationClass = annoAttrs.getClass("annotationClass");
+        if (!Annotation.class.equals(annotationClass)) {
+            scanner.setAnnotationClass(annotationClass);
         }
+
+        Class<?> markerInterface = annoAttrs.getClass("markerInterface");
+        if (!Class.class.equals(markerInterface)) {
+            scanner.setMarkerInterface(markerInterface);
+        }
+
+        Class<? extends BeanNameGenerator> generatorClass = annoAttrs.getClass("nameGenerator");
+        if (!BeanNameGenerator.class.equals(generatorClass)) {
+            scanner.setBeanNameGenerator((BeanNameGenerator) BeanUtils.instantiateClass(generatorClass));
+        }
+
+        Class<? extends MapperFactoryBean> mapperFactoryBeanClass = annoAttrs.getClass("factoryBean");
+        if (!MapperFactoryBean.class.equals(mapperFactoryBeanClass)) {
+            scanner.setMapperFactoryBean((MapperFactoryBean) BeanUtils.instantiateClass(mapperFactoryBeanClass));
+        }
+
+        scanner.setSqlSessionTemplateBeanName(annoAttrs.getString("sqlSessionTemplateRef"));
+        scanner.setSqlSessionFactoryBeanName(annoAttrs.getString("sqlSessionFactoryRef"));
+        List<String> basePackages = new ArrayList();
+        basePackages.addAll((Collection) Arrays.stream(annoAttrs.getStringArray("value")).filter(StringUtils::hasText).collect(Collectors.toList()));
+        basePackages.addAll((Collection) Arrays.stream(annoAttrs.getStringArray("basePackages")).filter(StringUtils::hasText).collect(Collectors.toList()));
+        basePackages.addAll((Collection) Arrays.stream(annoAttrs.getClassArray("basePackageClasses")).map(ClassUtils::getPackageName).collect(Collectors.toList()));
+        scanner.registerFilters();
+        scanner.doScan(StringUtils.toStringArray(basePackages));
+    }
+}
 ```
 
+doScan-->processBeanDefinitions
+
 ```java
-private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions){
+public class ClassPathMapperScanner extends ClassPathBeanDefinitionScanner {
+    private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions) {
         GenericBeanDefinition definition;
-        for(BeanDefinitionHolder holder:beanDefinitions){
-        definition=(GenericBeanDefinition)holder.getBeanDefinition();
-        String beanClassName=definition.getBeanClassName();
-        LOGGER.debug(()->"Creating MapperFactoryBean with name '"+holder.getBeanName()+"' and '"+beanClassName
-        +"' mapperInterface");
+        for (BeanDefinitionHolder holder : beanDefinitions) {
+            definition = (GenericBeanDefinition) holder.getBeanDefinition();
+            String beanClassName = definition.getBeanClassName();
+            LOGGER.debug(() -> "Creating MapperFactoryBean with name '" + holder.getBeanName()
+                    + "' and '" + beanClassName + "' mapperInterface");
 
-        // the mapper interface is the original class of the bean
-        // but, the actual class of the bean is MapperFactoryBean
-        definition.getConstructorArgumentValues().addGenericArgumentValue(beanClassName); // issue #59
-        //设置beanclass为MappeFactoryBean
-        definition.setBeanClass(this.mapperFactoryBeanClass);
-        definition.getPropertyValues().add("addToConfig",this.addToConfig);
+            // the mapper interface is the original class of the bean
+            // but, the actual class of the bean is MapperFactoryBean
+            definition.getConstructorArgumentValues().addGenericArgumentValue(beanClassName); // issue #59
+            definition.setBeanClass(this.mapperFactoryBean.getClass());
 
-        boolean explicitFactoryUsed=false;
-        if(StringUtils.hasText(this.sqlSessionFactoryBeanName)){
-        definition.getPropertyValues().add("sqlSessionFactory",
-        new RuntimeBeanReference(this.sqlSessionFactoryBeanName));
-        explicitFactoryUsed=true;
-        }else if(this.sqlSessionFactory!=null){
-        definition.getPropertyValues().add("sqlSessionFactory",this.sqlSessionFactory);
-        explicitFactoryUsed=true;
+            definition.getPropertyValues().add("addToConfig", this.addToConfig);
+
+            boolean explicitFactoryUsed = false;
+            if (StringUtils.hasText(this.sqlSessionFactoryBeanName)) {
+                definition.getPropertyValues().add("sqlSessionFactory", new RuntimeBeanReference(this.sqlSessionFactoryBeanName));
+                explicitFactoryUsed = true;
+            } else if (this.sqlSessionFactory != null) {
+                definition.getPropertyValues().add("sqlSessionFactory", this.sqlSessionFactory);
+                explicitFactoryUsed = true;
+            }
+
+            if (StringUtils.hasText(this.sqlSessionTemplateBeanName)) {
+                if (explicitFactoryUsed) {
+                    LOGGER.warn(() -> "Cannot use both: sqlSessionTemplate and sqlSessionFactory together. sqlSessionFactory is ignored.");
+                }
+                definition.getPropertyValues().add("sqlSessionTemplate", new RuntimeBeanReference(this.sqlSessionTemplateBeanName));
+                explicitFactoryUsed = true;
+            } else if (this.sqlSessionTemplate != null) {
+                if (explicitFactoryUsed) {
+                    LOGGER.warn(() -> "Cannot use both: sqlSessionTemplate and sqlSessionFactory together. sqlSessionFactory is ignored.");
+                }
+                definition.getPropertyValues().add("sqlSessionTemplate", this.sqlSessionTemplate);
+                explicitFactoryUsed = true;
+            }
+
+            if (!explicitFactoryUsed) {
+                LOGGER.debug(() -> "Enabling autowire by type for MapperFactoryBean with name '" + holder.getBeanName() + "'.");
+                definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+            }
         }
-        }
-        }
+    }
+}
 ```
 
 而MapperFactoryBean实现了spring的FactoryBean接口，当spring通过BeanDefinitionMap创建bean的过程中，
