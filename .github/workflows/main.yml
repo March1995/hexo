@@ -37,8 +37,8 @@ jobs:
         # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
         run: |
           mkdir -p ~/.ssh/
-          print "$ACTION_DEPLOY_KEY"
-          echo "$ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
+          print "ACTION_DEPLOY_KEY"
+          echo "ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           git config --global user.email "a1501987783@gmail.com"
