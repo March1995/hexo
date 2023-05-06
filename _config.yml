@@ -79,8 +79,8 @@ theme: hexo
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: git@github.com:MarchNineteen/MarchNineteen.github.io.git
-  branch: master
+  repo: git@github.com:March1995/hexo.git, gh-pages
+  branch: gh-pages
 
 
 # Local Search
