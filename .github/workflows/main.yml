@@ -11,7 +11,7 @@ on:
 
 jobs:
   # job1
-  blog-cicd:
+  blog-ci-cd:
     # 任务名称
     name: Hexo blog build & deploy
     # 设置任务执行环境
