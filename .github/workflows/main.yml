@@ -32,11 +32,11 @@ jobs:
       # 安装 Hexo 依赖
       - name: Install hexo dependencies
         env:
-          #设置环境变量 仓库私钥， 用来在构建完成后 推送到仓库
-          ACTION_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        #设置环境变量 仓库私钥， 用来在构建完成后 推送到仓库
         # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
         run: |
           mkdir -p ~/.ssh/
+          ACTION_DEPLOY_KEY=${{ secrets.ACTIONS_DEPLOY_KEY }}
           echo "$ACTION_DEPLOY_KEY"
           echo "$ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
