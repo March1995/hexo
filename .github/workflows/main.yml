@@ -31,7 +31,6 @@ jobs:
 
       # 安装 Hexo 依赖
       - name: Install hexo dependencies
-        env:
         #设置环境变量 仓库私钥， 用来在构建完成后 推送到仓库
         # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
         run: |
