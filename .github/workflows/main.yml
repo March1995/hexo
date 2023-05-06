@@ -11,7 +11,7 @@ on:
 
 jobs:
   # job1
-  pages:
+  blog-cicd:
     # 任务名称
     name: Hexo blog build & deploy
     # 设置任务执行环境
@@ -19,10 +19,10 @@ jobs:
 
   steps:
     # 使用 checkout@2 插件拉取代码
-    - name: Checkout codes
-      uses: actions/checkout@v2
-      with:
-        submodules: true
+    #    - name: Checkout codes
+    - uses: actions/checkout@v2
+    #      with:
+    #        submodules: true
 
     # 使用 setup-node@v1 设置 node.js 环境
     - name: Setup node
