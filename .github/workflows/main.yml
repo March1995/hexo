@@ -16,39 +16,38 @@ jobs:
     name: Hexo blog build & deploy
     # 设置任务执行环境
     runs-on: ubuntu-latest # 使用最新的 Ubuntu 系统作为编译部署的环境
+    steps:
+      # 使用 checkout@2 插件拉取代码
+      #    - name: Checkout codes
+      - uses: actions/checkout@v2
+      #      with:
+      #        submodules: true
 
-  steps:
-    # 使用 checkout@2 插件拉取代码
-    #    - name: Checkout codes
-    - uses: actions/checkout@v2
-    #      with:
-    #        submodules: true
+      # 使用 setup-node@v1 设置 node.js 环境
+      - name: Setup node
+        uses: actions/setup-node@v1
+        with:
+          node-version: '10.15.3'
 
-    # 使用 setup-node@v1 设置 node.js 环境
-    - name: Setup node
-      uses: actions/setup-node@v1
-      with:
-        node-version: '10.15.3'
+      # 安装 Hexo 依赖
+      - name: Install hexo dependencies
+        env:
+          #设置环境变量 仓库私钥， 用来在构建完成后 推送到仓库
+          ACTION_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+        # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
+        run: |
+          mkdir -p ~/.ssh/
+          echo "ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git config --global user.email "a1501987783@gmail.com"
+          git config --global user.name "March1995"
+          npm install -g hexo-cli
+          npm install
 
-    # 安装 Hexo 依赖
-    - name: Install hexo dependencies
-      env:
-        #设置环境变量 仓库私钥， 用来在构建完成后 推送到仓库
-        ACTION_DEPLOY_KEY: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-      # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
-      run: |
-        mkdir -p ~/.ssh/
-        echo "ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan github.com >> ~/.ssh/known_hosts
-        git config --global user.email "a1501987783@gmail.com"
-        git config --global user.name "March1995"
-        npm install -g hexo-cli
-        npm install
-
-    # 构建博客源码 并 推送推送构建产物
-    - name: Generate files
-      run: |
-        hexo clean
-        hexo generate
-        hexo deploy    
+      # 构建博客源码 并 推送推送构建产物
+      - name: Generate files
+        run: |
+          hexo clean
+          hexo generate
+          hexo deploy    
