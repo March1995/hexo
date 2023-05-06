@@ -42,7 +42,7 @@ jons:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           git config --global user.email "a1501987783@gmail.com"
-          git config --global user.name "march1995"
+          git config --global user.name "March1995"
           npm install -g hexo-cli
           npm install
 
