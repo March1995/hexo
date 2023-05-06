@@ -25,7 +25,7 @@ jobs:
 
       # 使用 setup-node@v1 设置 node.js 环境
       - name: Setup node
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: '10.15.3'
 
@@ -37,7 +37,8 @@ jobs:
         # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
         run: |
           mkdir -p ~/.ssh/
-          echo "ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
+          print "$ACTION_DEPLOY_KEY"
+          echo "$ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
           git config --global user.email "a1501987783@gmail.com"
