@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [ hexo ]
 
-jons:
+jobs:
     # job1
     blog-cicd:
         # 任务名称
