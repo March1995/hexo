@@ -29,25 +29,40 @@ jobs:
         with:
           node-version: '10.15.3'
 
-      # 安装 Hexo 依赖
-      - name: Install hexo dependencies
-        #设置环境变量 仓库私钥， 用来在构建完成后 推送到仓库
-        # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
+      - name: Install Dependencies
         run: |
-          mkdir -p ~/.ssh/
-          ACTION_DEPLOY_KEY=${{ secrets.ACTIONS_DEPLOY_KEY }}
-          echo "$ACTION_DEPLOY_KEY"
-          echo "$ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
-          git config --global user.email "a1501987783@gmail.com"
-          git config --global user.name "March1995"
-          npm install -g hexo-cli
+          npm install hexo-cli -g
           npm install
 
-      # 构建博客源码 并 推送推送构建产物
-      - name: Generate files
+      - name: Build
         run: |
-          hexo clean
-          hexo generate
-          hexo deploy    
+          hexo clean && hexo generate
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          publish_dir: ./public
+
+#      # 安装 Hexo 依赖
+#      - name: Install hexo dependencies
+#        env:
+#          #设置环境变量 仓库私钥， 用来在构建完成后 推送到仓库
+#          ACTION_DEPLOY_KEY: ${{secrets.ACTIONS_DEPLOY_KEY}}
+#        # 设置 ssh 私钥， 下载 hexo-cli 脚手架及相关安装包，
+#        run: |
+#          mkdir -p ~/.ssh/
+#          echo "$ACTION_DEPLOY_KEY" > ~/.ssh/id_rsa
+#          chmod 600 ~/.ssh/id_rsa
+#          ssh-keyscan github.com >> ~/.ssh/known_hosts
+#          git config --global user.email "a1501987783@gmail.com"
+#          git config --global user.name "March1995"
+#          npm install -g hexo-cli
+#          npm install
+#
+#      # 构建博客源码 并 推送推送构建产物
+#      - name: Generate files
+#        run: |
+#          hexo clean
+#          hexo generate
+#          hexo deploy
