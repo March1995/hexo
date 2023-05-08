@@ -9,40 +9,69 @@ on:
   pull_request:
     branches: [ hexo ]
 
-jobs:
-  # job1
-  blog-ci-cd:
-    # 任务名称
-    name: Hexo blog build & deploy
-    # 设置任务执行环境
-    runs-on: ubuntu-latest # 使用最新的 Ubuntu 系统作为编译部署的环境
-    steps:
-      # 使用 checkout@2 插件拉取代码
-      #    - name: Checkout codes
-      - uses: actions/checkout@v2
-      #      with:
-      #        submodules: true
 
-      # 使用 setup-node@v1 设置 node.js 环境
-      - name: Setup node
+jobs:
+  pages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 16.x
         uses: actions/setup-node@v2
         with:
-          node-version: '10.15.3'
-
+          node-version: "16"
+      - name: Cache NPM dependencies
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.OS }}-npm-cache
+          restore-keys: |
+            ${{ runner.OS }}-npm-cache
       - name: Install Dependencies
-        run: |
-          npm install hexo-cli -g
-          npm install
-
+        run: npm install
       - name: Build
-        run: |
-          hexo clean && hexo generate
-
+        run: npm run build
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
+
+#jobs:
+#  # job1
+#  blog-ci-cd:
+#    # 任务名称
+#    name: Hexo blog build & deploy
+#    # 设置任务执行环境
+#    runs-on: ubuntu-latest # 使用最新的 Ubuntu 系统作为编译部署的环境
+#    steps:
+#      # 使用 checkout@2 插件拉取代码
+#      #    - name: Checkout codes
+#      - uses: actions/checkout@v2
+#      #      with:
+#      #        submodules: true
+#
+#      # 使用 setup-node@v1 设置 node.js 环境
+#      - name: Setup node
+#        uses: actions/setup-node@v2
+#        with:
+#          node-version: '10.15.3'
+#
+#      - name: Install Dependencies
+#        run: |
+#          npm install hexo-cli -g
+#          npm install
+#
+#      - name: Build
+#        run: |
+#          hexo clean && hexo generate
+#
+#      - name: Deploy
+#        uses: peaceiris/actions-gh-pages@v3
+#        with:
+#          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+#          publish_dir: ./public
 
 #      # 安装 Hexo 依赖
 #      - name: Install hexo dependencies
